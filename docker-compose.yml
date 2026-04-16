@@ -3,5 +3,5 @@ services:
     build: .
     container_name: vat-rechner
     ports:
-      - "8080:80"
+      - "8047:80"
     restart: unless-stopped
