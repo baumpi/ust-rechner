@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================
+   KI AUSTRIA v3 DESIGN SYSTEM — CSS CUSTOM PROPERTIES
+   Dark Mode = Default. Light Mode = opt-in via .theme-light
+   =================================================== */
+
+:root {
+  /* Backgrounds — 3 Stufen */
+  --bg-app: #1F1E1C;
+  --bg-surface: #252321;
+  --bg-card: #2A2826;
+
+  /* Text — 3 Stufen */
+  --text-primary: #FAFAF7;
+  --text-secondary: #9B9B9B;
+  --text-muted: #6B6B6B;
+
+  /* Borders & Overlays */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.03);
+  --overlay-subtle: rgba(255, 255, 255, 0.02);
+  --overlay-light: rgba(255, 255, 255, 0.04);
+  --overlay-medium: rgba(255, 255, 255, 0.08);
+
+  /* Accent — eine Farbe, vier Abstufungen */
+  --color-accent: #C41E3A;
+  --color-accent-hover: #A3182F;
+  --color-accent-light: rgba(196, 30, 58, 0.15);
+  --color-accent-text: #E8536A;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+}
+
+/* === LIGHT MODE === */
+:root.theme-light {
+  --bg-app: #FAFAF7;
+  --bg-surface: #F2F0EC;
+  --bg-card: #FFFFFF;
+
+  --text-primary: #3D3D3D;
+  --text-secondary: #6B6B6B;
+  --text-muted: #9B9B9B;
+
+  --border: #E8E5DF;
+  --border-subtle: rgba(0, 0, 0, 0.04);
+  --overlay-subtle: rgba(0, 0, 0, 0.01);
+  --overlay-light: rgba(0, 0, 0, 0.03);
+  --overlay-medium: rgba(0, 0, 0, 0.06);
+
+  --color-accent: #C41E3A;
+  --color-accent-hover: #A3182F;
+  --color-accent-light: #F9E8EB;
+  --color-accent-text: #C41E3A;
+}
+
+/* === BASE STYLES === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === SCROLLBAR (subtle) === */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* === SAFE AREA (notch devices) === */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* === INPUT RESET === */
+input[type="text"],
+input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+/* === COPY TOAST ANIMATION === */
+@keyframes copyToast {
+  0% { opacity: 0; transform: translateY(4px); }
+  20% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+.animate-copy-toast {
+  animation: copyToast 1.2s ease-in-out forwards;
+}
