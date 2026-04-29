@@ -1,5 +1,6 @@
 import type { VatResult, VatRate, Direction } from '../utils/vatCalculation';
 import { formatEuro } from '../utils/formatNumber';
+import { copyToClipboard } from '../utils/clipboard';
 import { useState } from 'react';
 
 interface ShareButtonProps {
@@ -31,14 +32,12 @@ export function ShareButton({ result, rate, direction }: ShareButtonProps) {
       }
     }
 
-    // Fallback: copy to clipboard
-    try {
-      await navigator.clipboard.writeText(text);
+    // Fallback: copy to clipboard with robust mobile support
+    const ok = await copyToClipboard(text);
+    if (ok) {
       setShared(true);
-      if (navigator.vibrate) navigator.vibrate(5);
+      if (navigator.vibrate) navigator.vibrate(8);
       setTimeout(() => setShared(false), 1500);
-    } catch {
-      // Silently fail
     }
   };
 
