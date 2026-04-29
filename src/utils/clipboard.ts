@@ -1,50 +1,64 @@
 /**
- * Copy text to clipboard with fallback for mobile browsers.
- * Modern API first, then execCommand fallback for iOS Safari quirks.
+ * Copy text to clipboard — synchronous-first to preserve iOS Safari user-gesture chain.
+ *
+ * iOS quirk: `await navigator.clipboard.writeText()` breaks the user-gesture context
+ * if used as the FIRST async operation in a click handler. So we attempt the
+ * synchronous `execCommand('copy')` path first, which doesn't break the gesture.
+ *
+ * Returns true if copy was likely successful.
  */
-export async function copyToClipboard(text: string): Promise<boolean> {
-  // Try the modern Clipboard API first (HTTPS required)
-  if (navigator.clipboard && window.isSecureContext) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      // Fall through to legacy method
-    }
-  }
+export function copyToClipboard(text: string): boolean {
+  // === Method 1: Synchronous textarea + execCommand (works on iOS) ===
+  let success = false;
 
-  // Fallback: hidden textarea + execCommand('copy')
-  // Works on older iOS/Safari and non-secure contexts
   try {
     const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.setAttribute('readonly', '');
+    textarea.contentEditable = 'true';
     textarea.style.position = 'fixed';
     textarea.style.top = '0';
     textarea.style.left = '0';
-    textarea.style.width = '1px';
-    textarea.style.height = '1px';
+    textarea.style.width = '2em';
+    textarea.style.height = '2em';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
     textarea.style.opacity = '0';
-    textarea.style.pointerEvents = 'none';
     document.body.appendChild(textarea);
 
-    // iOS-specific: select using a Range
-    if (/iP(hone|ad|od)/.test(navigator.userAgent)) {
+    // iOS-specific: must use Range + selection
+    if (/iP(hone|ad|od)/.test(navigator.userAgent) || /Mac/.test(navigator.userAgent)) {
       const range = document.createRange();
       range.selectNodeContents(textarea);
       const selection = window.getSelection();
       selection?.removeAllRanges();
       selection?.addRange(range);
-      textarea.setSelectionRange(0, 999999);
+      textarea.setSelectionRange(0, text.length);
     } else {
       textarea.focus();
       textarea.select();
     }
 
-    const ok = document.execCommand('copy');
+    success = document.execCommand('copy');
     document.body.removeChild(textarea);
-    return ok;
   } catch {
-    return false;
+    success = false;
   }
+
+  // === Method 2: Modern Clipboard API (fire-and-forget, async) ===
+  // Run as a backup — if execCommand worked, this is just redundant.
+  // Don't await — we can't (function is sync); fire-and-forget is fine.
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      navigator.clipboard.writeText(text).catch(() => {});
+      success = true;
+    } catch {
+      // ignore
+    }
+  }
+
+  return success;
 }

@@ -14,8 +14,9 @@ export function ResultRow({ label, value, isHighlighted = false, sublabel, onTap
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
 
-  const handleCopy = useCallback(async () => {
-    const ok = await copyToClipboard(formatEuro(value));
+  const handleCopy = useCallback(() => {
+    // Synchronous call — preserves iOS Safari user-gesture context
+    const ok = copyToClipboard(formatEuro(value));
     if (ok) {
       setCopied(true);
       if (navigator.vibrate) navigator.vibrate(8);

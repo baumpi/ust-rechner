@@ -12,9 +12,9 @@ interface ShareButtonProps {
 export function ShareButton({ result, rate, direction }: ShareButtonProps) {
   const [shared, setShared] = useState(false);
 
-  const handleShare = async () => {
+  const buildText = () => {
     const isBrutto = direction === 'brutto-to-netto';
-    const text = [
+    return [
       `USt-Rechner (${rate}%)`,
       `Netto:  € ${formatEuro(result.netto)}`,
       `${rate}% USt: € ${formatEuro(result.ust)}`,
@@ -22,18 +22,38 @@ export function ShareButton({ result, rate, direction }: ShareButtonProps) {
       '',
       isBrutto ? '(Brutto → Netto)' : '(Netto → Brutto)',
     ].join('\n');
+  };
 
-    if (navigator.share) {
+  const handleShare = () => {
+    const text = buildText();
+
+    // CRITICAL: navigator.share() must be called SYNCHRONOUSLY inside the click
+    // handler on iOS Safari, or it'll throw NotAllowedError. So we call it without
+    // await and rely on the promise itself.
+    if (typeof navigator.share === 'function') {
       try {
-        await navigator.share({ text });
+        const sharePromise = navigator.share({ text });
+        // Handle the promise without breaking gesture chain
+        sharePromise
+          .then(() => {
+            // success — native sheet was used
+          })
+          .catch(() => {
+            // User cancelled or share failed — fall back to clipboard
+            const ok = copyToClipboard(text);
+            if (ok) {
+              setShared(true);
+              setTimeout(() => setShared(false), 1500);
+            }
+          });
         return;
       } catch {
-        // User cancelled or not supported — fall through to clipboard
+        // Synchronous error — fall through to clipboard
       }
     }
 
-    // Fallback: copy to clipboard with robust mobile support
-    const ok = await copyToClipboard(text);
+    // No share API — copy synchronously
+    const ok = copyToClipboard(text);
     if (ok) {
       setShared(true);
       if (navigator.vibrate) navigator.vibrate(8);
@@ -44,7 +64,7 @@ export function ShareButton({ result, rate, direction }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg
+      className="flex items-center justify-center gap-2 w-full min-h-[44px] py-3 rounded-lg
                  bg-[var(--overlay-light)] hover:bg-[var(--overlay-medium)]
                  active:scale-[0.98] transition-all duration-200
                  text-sm font-human font-medium text-[var(--text-secondary)]
