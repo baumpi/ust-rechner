@@ -1,6 +1,7 @@
 import type { VatResult, VatRate, Direction } from '../utils/vatCalculation';
 import { ResultRow } from './ResultRow';
 import { ShareButton } from './ShareButton';
+import { SavingsSplit } from './SavingsSplit';
 
 interface ResultsDisplayProps {
   result: VatResult | null;
@@ -77,6 +78,9 @@ export function ResultsDisplay({ result, rate, direction, onTapValue }: ResultsD
           </>
         )}
       </div>
+
+      {/* Konto-Split: Rücklage / Verfügbar vom Netto */}
+      <SavingsSplit netto={result.netto} />
 
       {/* Share button */}
       <ShareButton result={result} rate={rate} direction={direction} />
